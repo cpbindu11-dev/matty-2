@@ -1,24 +1,28 @@
 {
-  "name": "matty",
+  "name": "matty-server",
   "version": "1.0.0",
-  "description": "Online Graphic Design Tool",
+  "description": "Matty Design Tool - Backend API",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "client": "cd client && npm start",
-    "server": "cd server && npm run dev",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": ["design", "graphic", "mern"],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
-    "konva": "^10.0.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.1",
     "multer": "^2.0.2",
-    "multer-storage-cloudinary": "^4.0.0",
-    "react-konva": "^19.2.0"
+    "multer-storage-cloudinary": "^4.0.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "nodemon": "^3.1.4"
   }
 }
