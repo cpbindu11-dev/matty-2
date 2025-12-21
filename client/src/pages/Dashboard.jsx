@@ -253,7 +253,7 @@ export default function Dashboard() {
         </Grid>
 
         {/* Create Your Own CTA */}
-        <Paper sx={{ p: 6, textAlign: "center", borderRadius: 4, background: "rgba(255,255,255,0.2)", backdropFilter: "blur(20px)" }}>
+        <Paper sx={{ p: 6, textAlign: "center", borderRadius: 4, background: "rgba(255,255,255,0.2)", backdropFilter: "blur(20px)", mb: 6 }}>
           <Typography variant="h3" sx={{ fontWeight: 800, color: "white", mb: 2 }}>
             ✨ Create Your Own Design
           </Typography>
@@ -273,7 +273,7 @@ export default function Dashboard() {
               borderRadius: 3,
               background: "linear-gradient(45deg, #FF6B6B, #FFE66D)",
               boxShadow: "0 10px 30px rgba(255,107,107,0.4)",
-              "&:hover": { transform: "scale(1.05)" }
+              "&:hover": { transform: "scale(1.05)", background: "linear-gradient(45deg, #FF5252, #FFD740)" }
             }}
           >
             Start Creating

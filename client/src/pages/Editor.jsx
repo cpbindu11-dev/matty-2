@@ -5,21 +5,26 @@ import {
   Box, Button, TextField, Paper, Stack, Typography, Divider, Select, MenuItem,
   FormControl, InputLabel, Slider, Tabs, Tab, IconButton, ButtonGroup, Grid,
   Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, ToggleButton,
-  ToggleButtonGroup, Chip, Card, CardMedia
+  ToggleButtonGroup, Chip, Card, CardMedia, Accordion, AccordionSummary, AccordionDetails
 } from "@mui/material";
 import {
   FormatBold, FormatItalic, FormatUnderlined, Delete, Save, Download,
   Image as ImageIcon, Undo, Redo, Flip, ContentCopy, ZoomIn, ZoomOut,
   Crop, Palette, TextFields, Circle, Square, Star, Brightness6, Contrast,
   Opacity, BlurOn, AutoAwesome, ChangeCircle, Hexagon, Pentagon, Polyline,
-  Add, CheckCircle, RotateLeft, RotateRight, FlipToFront, FlipToBack
+  Add, CheckCircle, RotateLeft, RotateRight, FlipToFront, FlipToBack,
+  FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify,
+  FormatLineSpacing, FilterBAndW, Gradient, InvertColors, Lock, LockOpen,
+  ExpandMore, BorderAll, BorderStyle, FormatColorFill, Texture, Visibility,
+  VisibilityOff, SelectAll, Group, Ungroup
 } from "@mui/icons-material";
 import API from "../utils/api";
 
 const FONTS = [
   "Arial", "Helvetica", "Times New Roman", "Georgia", "Verdana", "Courier New",
   "Comic Sans MS", "Impact", "Trebuchet MS", "Palatino", "Garamond", "Bookman",
-  "Arial Black", "Tahoma", "Lucida Console", "Monaco", "Brush Script MT"
+  "Arial Black", "Tahoma", "Lucida Console", "Monaco", "Brush Script MT", "Roboto",
+  "Open Sans", "Lato", "Montserrat", "Poppins", "Raleway", "Ubuntu", "Playfair Display"
 ];
 
 const FONT_STYLES = [
@@ -30,31 +35,40 @@ const FONT_STYLES = [
 ];
 
 const TEMPLATES = {
-  "ig-post-1": { width: 1080, height: 1080, bg: "#667eea" },
-  "ig-post-2": { width: 1080, height: 1080, bg: "#f093fb" },
-  "ig-post-3": { width: 1080, height: 1080, bg: "#4facfe" },
-  "ig-story-1": { width: 1080, height: 1920, bg: "#fa709a" },
-  "ig-story-2": { width: 1080, height: 1920, bg: "#30cfd0" },
-  "ig-story-3": { width: 1080, height: 1920, bg: "#a8edea" },
-  "fb-post-1": { width: 1200, height: 630, bg: "#667eea" },
-  "fb-post-2": { width: 820, height: 312, bg: "#f093fb" },
-  "twitter-post-1": { width: 1024, height: 512, bg: "#4facfe" },
-  "twitter-header-1": { width: 1500, height: 500, bg: "#fa709a" },
-  "linkedin-post-1": { width: 1200, height: 627, bg: "#30cfd0" },
-  "pinterest-pin-1": { width: 1000, height: 1500, bg: "#a8edea" },
-  "yt-thumb-1": { width: 1280, height: 720, bg: "#667eea" },
-  "yt-thumb-2": { width: 1280, height: 720, bg: "#f093fb" },
-  "yt-thumb-3": { width: 1280, height: 720, bg: "#4facfe" },
-  "yt-banner-1": { width: 2560, height: 1440, bg: "#fa709a" },
-  "ad-banner-1": { width: 728, height: 90, bg: "#667eea" },
-  "ad-banner-2": { width: 300, height: 250, bg: "#f093fb" },
-  "email-header-1": { width: 600, height: 200, bg: "#fa709a" },
-  "business-card-1": { width: 1050, height: 600, bg: "#667eea" },
-  "presentation-1": { width: 1920, height: 1080, bg: "#f093fb" },
-  "invitation-1": { width: 1080, height: 1350, bg: "#667eea" },
-  "poster-1": { width: 1080, height: 1920, bg: "#4facfe" },
-  "certificate-1": { width: 1056, height: 816, bg: "#f093fb" }
+  "ig-post-1": { width: 1080, height: 1080, bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "ig-post-2": { width: 1080, height: 1080, bg: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "ig-post-3": { width: 1080, height: 1080, bg: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+  "ig-story-1": { width: 1080, height: 1920, bg: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
+  "ig-story-2": { width: 1080, height: 1920, bg: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
+  "ig-story-3": { width: 1080, height: 1920, bg: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" },
+  "fb-post-1": { width: 1200, height: 630, bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "fb-post-2": { width: 820, height: 312, bg: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "twitter-post-1": { width: 1024, height: 512, bg: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+  "twitter-header-1": { width: 1500, height: 500, bg: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
+  "linkedin-post-1": { width: 1200, height: 627, bg: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
+  "pinterest-pin-1": { width: 1000, height: 1500, bg: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" },
+  "yt-thumb-1": { width: 1280, height: 720, bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "yt-thumb-2": { width: 1280, height: 720, bg: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "yt-thumb-3": { width: 1280, height: 720, bg: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+  "yt-banner-1": { width: 2560, height: 1440, bg: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
+  "ad-banner-1": { width: 728, height: 90, bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "ad-banner-2": { width: 300, height: 250, bg: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "email-header-1": { width: 600, height: 200, bg: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
+  "business-card-1": { width: 1050, height: 600, bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "presentation-1": { width: 1920, height: 1080, bg: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "invitation-1": { width: 1080, height: 1350, bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "poster-1": { width: 1080, height: 1920, bg: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+  "certificate-1": { width: 1056, height: 816, bg: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }
 };
+
+const GRADIENT_PRESETS = [
+  { name: "Sunset", value: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
+  { name: "Ocean", value: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+  { name: "Purple", value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  { name: "Forest", value: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)" },
+  { name: "Fire", value: "linear-gradient(135deg, #f83600 0%, #f9d423 100%)" },
+  { name: "Ice", value: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" },
+];
 
 export default function Editor() {
   const canvasRef = useRef(null);
@@ -80,6 +94,13 @@ export default function Editor() {
   const [fontStyle, setFontStyle] = useState("normal");
   const [textColor, setTextColor] = useState("#000000");
   const [textAlign, setTextAlign] = useState("left");
+  const [lineHeight, setLineHeight] = useState(1.2);
+  const [letterSpacing, setLetterSpacing] = useState(0);
+
+  // SHAPE & STROKE SETTINGS
+  const [strokeWidth, setStrokeWidth] = useState(0);
+  const [strokeColor, setStrokeColor] = useState("#000000");
+  const [borderRadius, setBorderRadius] = useState(0);
 
   // IMAGE FILTERS
   const [brightness, setBrightness] = useState(0);
@@ -87,22 +108,30 @@ export default function Editor() {
   const [saturation, setSaturation] = useState(0);
   const [blur, setBlur] = useState(0);
   const [opacity, setOpacity] = useState(1);
+  const [grayscale, setGrayscale] = useState(0);
+  const [sepia, setSepia] = useState(0);
 
-  // ZOOM
+  // ZOOM & GRID
   const [zoom, setZoom] = useState(1);
+  const [showGrid, setShowGrid] = useState(false);
 
   /* Initialize Canvas */
   useEffect(() => {
     const templateId = searchParams.get("template");
-    const template = templateId ? TEMPLATES[templateId] : { width: 1080, height: 1080, bg: "#ffffff" };
+    const template = templateId ? TEMPLATES[templateId] : { width: 1080, height: 1080, bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" };
 
     const c = new fabric.Canvas(canvasRef.current, {
       width: template.width,
       height: template.height,
-      backgroundColor: template.bg
+      backgroundColor: '#667eea'
     });
 
     setCanvas(c);
+
+    // Apply gradient background after canvas is created
+    if (template.bg && template.bg.includes('gradient')) {
+      applyGradientToCanvas(c, template.bg);
+    }
 
     c.on("selection:created", (e) => {
       setSelectedObject(e.selected[0]);
@@ -118,15 +147,53 @@ export default function Editor() {
     return () => c.dispose();
   }, [searchParams]);
 
+  const applyGradientToCanvas = (canvasInstance, gradientString) => {
+    if (!canvasInstance) return;
+    
+    // Create temporary canvas to render gradient
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasInstance.width;
+    tempCanvas.height = canvasInstance.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Parse gradient colors from string
+    const colorMatches = gradientString.match(/#[0-9a-fA-F]{6}/g);
+    if (!colorMatches || colorMatches.length < 2) {
+      canvasInstance.setBackgroundColor('#667eea', canvasInstance.renderAll.bind(canvasInstance));
+      return;
+    }
+    
+    // Create gradient
+    const gradient = tempCtx.createLinearGradient(0, 0, tempCanvas.width, tempCanvas.height);
+    gradient.addColorStop(0, colorMatches[0]);
+    gradient.addColorStop(1, colorMatches[1]);
+    tempCtx.fillStyle = gradient;
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    // Set gradient as background image
+    fabric.Image.fromURL(tempCanvas.toDataURL(), (img) => {
+      if (canvasInstance && !canvasInstance._disposed) {
+        canvasInstance.setBackgroundImage(img, canvasInstance.renderAll.bind(canvasInstance), {
+          scaleX: canvasInstance.width / img.width,
+          scaleY: canvasInstance.height / img.height
+        });
+      }
+    });
+  };
+
   const updateControlsFromObject = (obj) => {
     if (obj.type === "textbox" || obj.type === "text") {
       setFontSize(obj.fontSize || 32);
       setFontFamily(obj.fontFamily || "Arial");
       setTextColor(obj.fill || "#000000");
+      setLineHeight(obj.lineHeight || 1.2);
+      setLetterSpacing(obj.charSpacing || 0);
     }
-    if (obj.type === "image") {
-      setOpacity(obj.opacity || 1);
+    if (obj.stroke) {
+      setStrokeColor(obj.stroke);
+      setStrokeWidth(obj.strokeWidth || 0);
     }
+    setOpacity(obj.opacity || 1);
   };
 
   const saveHistory = () => {
@@ -160,7 +227,12 @@ export default function Editor() {
     const reader = new FileReader();
     reader.onload = (event) => {
       fabric.Image.fromURL(event.target.result, (img) => {
-        img.set({ left: canvas.width / 2, top: canvas.height / 2, originX: "center", originY: "center" });
+        img.set({ 
+          left: canvas.width / 2, 
+          top: canvas.height / 2, 
+          originX: "center", 
+          originY: "center" 
+        });
         img.scaleToWidth(canvas.width * 0.5);
         canvas.add(img);
         canvas.renderAll();
@@ -188,6 +260,13 @@ export default function Editor() {
     reader.readAsDataURL(file);
   };
 
+  /* Apply Gradient Background */
+  const applyGradientBackground = (gradientValue) => {
+    if (!canvas) return;
+    applyGradientToCanvas(canvas, gradientValue);
+    saveHistory();
+  };
+
   /* Add Text */
   const addText = () => {
     if (!textInput.trim()) return;
@@ -212,7 +291,9 @@ export default function Editor() {
       fontFamily,
       fontWeight,
       fontStyle: fontStyleVal,
-      textAlign
+      textAlign,
+      lineHeight,
+      charSpacing: letterSpacing
     });
     canvas.add(t);
     canvas.renderAll();
@@ -251,13 +332,13 @@ export default function Editor() {
     
     switch(type) {
       case "circle":
-        shape = new fabric.Circle({ ...center, radius: 50, fill: textColor });
+        shape = new fabric.Circle({ ...center, radius: 50, fill: textColor, stroke: strokeColor, strokeWidth });
         break;
       case "rectangle":
-        shape = new fabric.Rect({ ...center, width: 100, height: 100, fill: textColor });
+        shape = new fabric.Rect({ ...center, width: 100, height: 100, fill: textColor, stroke: strokeColor, strokeWidth });
         break;
       case "triangle":
-        shape = new fabric.Triangle({ ...center, width: 100, height: 100, fill: textColor });
+        shape = new fabric.Triangle({ ...center, width: 100, height: 100, fill: textColor, stroke: strokeColor, strokeWidth });
         break;
       case "star":
         const points = [];
@@ -266,7 +347,7 @@ export default function Editor() {
           const angle = (Math.PI * 2 * i) / 10;
           points.push({ x: radius * Math.cos(angle), y: radius * Math.sin(angle) });
         }
-        shape = new fabric.Polygon(points, { ...center, fill: textColor });
+        shape = new fabric.Polygon(points, { ...center, fill: textColor, stroke: strokeColor, strokeWidth });
         break;
       case "hexagon":
         const hexPoints = [];
@@ -274,7 +355,7 @@ export default function Editor() {
           const angle = (Math.PI * 2 * i) / 6;
           hexPoints.push({ x: 50 * Math.cos(angle), y: 50 * Math.sin(angle) });
         }
-        shape = new fabric.Polygon(hexPoints, { ...center, fill: textColor });
+        shape = new fabric.Polygon(hexPoints, { ...center, fill: textColor, stroke: strokeColor, strokeWidth });
         break;
       case "pentagon":
         const pentPoints = [];
@@ -282,10 +363,10 @@ export default function Editor() {
           const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
           pentPoints.push({ x: 50 * Math.cos(angle), y: 50 * Math.sin(angle) });
         }
-        shape = new fabric.Polygon(pentPoints, { ...center, fill: textColor });
+        shape = new fabric.Polygon(pentPoints, { ...center, fill: textColor, stroke: strokeColor, strokeWidth });
         break;
       case "line":
-        shape = new fabric.Line([50, 50, 150, 50], { ...center, stroke: textColor, strokeWidth: 3 });
+        shape = new fabric.Line([50, 50, 150, 50], { ...center, stroke: strokeColor || textColor, strokeWidth: strokeWidth || 3 });
         break;
     }
     canvas.add(shape);
@@ -300,8 +381,15 @@ export default function Editor() {
       new fabric.Image.filters.Brightness({ brightness }),
       new fabric.Image.filters.Contrast({ contrast }),
       new fabric.Image.filters.Saturation({ saturation }),
-      new fabric.Image.filters.Blur({ blur })
+      new fabric.Image.filters.Blur({ blur }),
+      new fabric.Image.filters.Grayscale(),
     ];
+    
+    // Apply grayscale manually
+    if (grayscale > 0) {
+      selectedObject.filters.push(new fabric.Image.filters.Grayscale());
+    }
+    
     selectedObject.applyFilters();
     canvas.renderAll();
     saveHistory();
@@ -354,6 +442,29 @@ export default function Editor() {
     if (!selectedObject) return;
     canvas.sendToBack(selectedObject);
     canvas.renderAll();
+  };
+
+  const toggleLock = () => {
+    if (!selectedObject) return;
+    const isLocked = selectedObject.lockMovementX;
+    selectedObject.set({
+      lockMovementX: !isLocked,
+      lockMovementY: !isLocked,
+      lockRotation: !isLocked,
+      lockScalingX: !isLocked,
+      lockScalingY: !isLocked,
+      selectable: isLocked
+    });
+    canvas.renderAll();
+  };
+
+  const selectAll = () => {
+    canvas.discardActiveObject();
+    const sel = new fabric.ActiveSelection(canvas.getObjects(), {
+      canvas: canvas,
+    });
+    canvas.setActiveObject(sel);
+    canvas.requestRenderAll();
   };
 
   /* Create Sticker */
@@ -418,7 +529,7 @@ export default function Editor() {
     <Box sx={{ display: "flex", height: "calc(100vh - 64px)", bgcolor: "#f5f5f5" }}>
       
       {/* TOP TOOLBAR */}
-      <Box sx={{ position: "absolute", top: 0, left: 300, right: 300, bgcolor: "white", p: 1, zIndex: 10, boxShadow: 2 }}>
+      <Box sx={{ position: "absolute", top: 0, left: 320, right: 320, bgcolor: "white", p: 1, zIndex: 10, boxShadow: 2 }}>
         <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
           <TextField
             size="small"
@@ -438,6 +549,11 @@ export default function Editor() {
             <Tooltip title="Zoom In"><IconButton onClick={() => handleZoom(0.1)}><ZoomIn /></IconButton></Tooltip>
           </ButtonGroup>
 
+          <ButtonGroup size="small">
+            <Tooltip title="Select All"><IconButton onClick={selectAll}><SelectAll /></IconButton></Tooltip>
+            <Tooltip title={selectedObject?.lockMovementX ? "Unlock" : "Lock"}><IconButton onClick={toggleLock}>{selectedObject?.lockMovementX ? <Lock /> : <LockOpen />}</IconButton></Tooltip>
+          </ButtonGroup>
+
           <Stack direction="row" spacing={1}>
             <Button variant="contained" color="success" onClick={() => setShowSaveDialog(true)} startIcon={<Save />}>Save</Button>
             <Button variant="outlined" onClick={exportImage} startIcon={<Download />}>Export</Button>
@@ -446,7 +562,7 @@ export default function Editor() {
       </Box>
 
       {/* LEFT SIDEBAR */}
-      <Paper sx={{ width: 300, overflowY: "auto", mt: 7, borderRight: "1px solid #ddd" }}>
+      <Paper sx={{ width: 320, overflowY: "auto", mt: 7, borderRight: "1px solid #ddd" }}>
         <Tabs value={leftTab} onChange={(e, v) => setLeftTab(v)} variant="fullWidth">
           <Tab label="Elements" />
           <Tab label="Text" />
@@ -476,6 +592,24 @@ export default function Editor() {
                 <Grid item xs={4}><Button fullWidth variant="outlined" onClick={() => addShape("pentagon")}><Pentagon /></Button></Grid>
                 <Grid item xs={4}><Button fullWidth variant="outlined" onClick={() => addShape("line")}><Polyline /></Button></Grid>
               </Grid>
+
+              <Divider />
+
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography>Border & Stroke</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack spacing={2}>
+                    <Typography variant="caption">Stroke Width: {strokeWidth}px</Typography>
+                    <Slider value={strokeWidth} onChange={(e,v)=>setStrokeWidth(v)} min={0} max={20} />
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="caption">Stroke Color:</Typography>
+                      <input type="color" value={strokeColor} onChange={(e)=>setStrokeColor(e.target.value)} style={{width:60,height:40,border:"1px solid #ddd",cursor:"pointer"}} />
+                    </Stack>
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>
             </Stack>
           )}
 
@@ -525,6 +659,12 @@ export default function Editor() {
               <Typography variant="caption">Font Size: {fontSize}px</Typography>
               <Slider min={12} max={150} value={fontSize} onChange={(e,v)=>{setFontSize(v);updateTextProperty("fontSize", v);}} />
 
+              <Typography variant="caption">Line Height: {lineHeight}</Typography>
+              <Slider min={0.5} max={3} step={0.1} value={lineHeight} onChange={(e,v)=>{setLineHeight(v);updateTextProperty("lineHeight", v);}} />
+
+              <Typography variant="caption">Letter Spacing: {letterSpacing}</Typography>
+              <Slider min={-100} max={500} value={letterSpacing} onChange={(e,v)=>{setLetterSpacing(v);updateTextProperty("charSpacing", v);}} />
+
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="caption">Color:</Typography>
                 <input 
@@ -541,10 +681,10 @@ export default function Editor() {
               <FormControl fullWidth>
                 <InputLabel>Text Align</InputLabel>
                 <Select value={textAlign} onChange={(e) => {setTextAlign(e.target.value);updateTextProperty("textAlign", e.target.value);}}>
-                  <MenuItem value="left">Left</MenuItem>
-                  <MenuItem value="center">Center</MenuItem>
-                  <MenuItem value="right">Right</MenuItem>
-                  <MenuItem value="justify">Justify</MenuItem>
+                  <MenuItem value="left"><FormatAlignLeft /> Left</MenuItem>
+                  <MenuItem value="center"><FormatAlignCenter /> Center</MenuItem>
+                  <MenuItem value="right"><FormatAlignRight /> Right</MenuItem>
+                  <MenuItem value="justify"><FormatAlignJustify /> Justify</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
@@ -580,10 +720,11 @@ export default function Editor() {
       </Box>
 
       {/* RIGHT SIDEBAR */}
-      <Paper sx={{ width: 300, overflowY: "auto", mt: 7, borderLeft: "1px solid #ddd" }}>
+      <Paper sx={{ width: 320, overflowY: "auto", mt: 7, borderLeft: "1px solid #ddd" }}>
         <Tabs value={rightTab} onChange={(e, v) => setRightTab(v)} variant="fullWidth">
           <Tab label="Background" />
           <Tab label="Edit" />
+          <Tab label="Filters" />
         </Tabs>
 
         <Box sx={{ p: 2 }}>
@@ -607,6 +748,28 @@ export default function Editor() {
                   style={{ width: 80, height: 40, border: "1px solid #ddd", cursor: "pointer" }}
                 />
               </Stack>
+
+              <Divider />
+
+              <Typography variant="subtitle2">Gradient Presets</Typography>
+              <Grid container spacing={1}>
+                {GRADIENT_PRESETS.map((grad) => (
+                  <Grid item xs={6} key={grad.name}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => applyGradientBackground(grad.value)}
+                      sx={{ 
+                        background: grad.value, 
+                        color: 'white',
+                        '&:hover': { opacity: 0.8 }
+                      }}
+                    >
+                      {grad.name}
+                    </Button>
+                  </Grid>
+                ))}
+              </Grid>
             </Stack>
           )}
 
@@ -645,21 +808,6 @@ export default function Editor() {
                   {selectedObject.type === "image" && (
                     <>
                       <Divider />
-                      <Typography variant="subtitle2">Image Filters</Typography>
-                      
-                      <Typography variant="caption">Brightness</Typography>
-                      <Slider value={brightness} onChange={(e,v)=>{setBrightness(v);applyFilters();}} min={-1} max={1} step={0.01} />
-                      
-                      <Typography variant="caption">Contrast</Typography>
-                      <Slider value={contrast} onChange={(e,v)=>{setContrast(v);applyFilters();}} min={-1} max={1} step={0.01} />
-                      
-                      <Typography variant="caption">Saturation</Typography>
-                      <Slider value={saturation} onChange={(e,v)=>{setSaturation(v);applyFilters();}} min={-1} max={1} step={0.01} />
-                      
-                      <Typography variant="caption">Blur</Typography>
-                      <Slider value={blur} onChange={(e,v)=>{setBlur(v);applyFilters();}} min={0} max={1} step={0.01} />
-
-                      <Divider />
                       <Button variant="outlined" fullWidth onClick={createSticker} startIcon={<AutoAwesome />}>
                         Create Sticker
                       </Button>
@@ -668,6 +816,41 @@ export default function Editor() {
                 </>
               ) : (
                 <Typography variant="body2" color="text.secondary">Select an object to edit</Typography>
+              )}
+            </Stack>
+          )}
+
+          {/* FILTERS TAB */}
+          {rightTab === 2 && (
+            <Stack spacing={2}>
+              <Typography variant="h6">Image Filters</Typography>
+              
+              {selectedObject && selectedObject.type === "image" ? (
+                <>
+                  <Typography variant="caption">Brightness</Typography>
+                  <Slider value={brightness} onChange={(e,v)=>{setBrightness(v);applyFilters();}} min={-1} max={1} step={0.01} />
+                  
+                  <Typography variant="caption">Contrast</Typography>
+                  <Slider value={contrast} onChange={(e,v)=>{setContrast(v);applyFilters();}} min={-1} max={1} step={0.01} />
+                  
+                  <Typography variant="caption">Saturation</Typography>
+                  <Slider value={saturation} onChange={(e,v)=>{setSaturation(v);applyFilters();}} min={-1} max={1} step={0.01} />
+                  
+                  <Typography variant="caption">Blur</Typography>
+                  <Slider value={blur} onChange={(e,v)=>{setBlur(v);applyFilters();}} min={0} max={1} step={0.01} />
+
+                  <Typography variant="caption">Grayscale</Typography>
+                  <Slider value={grayscale} onChange={(e,v)=>{setGrayscale(v);applyFilters();}} min={0} max={1} step={0.01} />
+
+                  <Typography variant="caption">Sepia</Typography>
+                  <Slider value={sepia} onChange={(e,v)=>{setSepia(v);applyFilters();}} min={0} max={1} step={0.01} />
+
+                  <ButtonGroup fullWidth sx={{ mt: 2 }}>
+                    <Button onClick={() => {setBrightness(0);setContrast(0);setSaturation(0);setBlur(0);setGrayscale(0);setSepia(0);applyFilters();}}>Reset All</Button>
+                  </ButtonGroup>
+                </>
+              ) : (
+                <Typography variant="body2" color="text.secondary">Select an image to apply filters</Typography>
               )}
             </Stack>
           )}
