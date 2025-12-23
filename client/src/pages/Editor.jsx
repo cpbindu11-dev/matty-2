@@ -4,64 +4,37 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box, Button, TextField, Paper, Stack, Typography, Divider, Select, MenuItem,
   FormControl, InputLabel, Slider, Tabs, Tab, IconButton, ButtonGroup, Grid,
-  Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert
+  Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, AppBar, Toolbar
 } from "@mui/material";
 import {
   Delete, Save, Download, Image as ImageIcon, Undo, Redo, ContentCopy, 
-  ZoomIn, ZoomOut, TextFields, Circle, Square, RotateLeft, RotateRight
+  ZoomIn, ZoomOut, TextFields, Circle, Square, RotateLeft, RotateRight, ArrowBack
 } from "@mui/icons-material";
 import API from "../utils/api";
 
 const FONTS = ["Arial", "Helvetica", "Times New Roman", "Georgia", "Verdana", "Courier New", "Roboto", "Open Sans", "Montserrat", "Poppins"];
 
-// Complete template configurations with all IDs from Dashboard
 const TEMPLATES = {
-  "ig-post-1": { width: 1080, height: 1080, name: "Instagram Post - Minimal", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "ig-post-2": { width: 1080, height: 1080, name: "Instagram Post - Bold", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  "ig-post-3": { width: 1080, height: 1080, name: "Instagram Post - Professional", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-  "ig-story-1": { width: 1080, height: 1920, name: "Instagram Story - Modern", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
-  "ig-story-2": { width: 1080, height: 1920, name: "Instagram Story - Elegant", gradient: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
-  "ig-story-3": { width: 1080, height: 1920, name: "Instagram Story - Vibrant", gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" },
+  "ig-post-1": { width: 1080, height: 1080, name: "Instagram Post - Gradient", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "ig-post-2": { width: 1080, height: 1080, name: "Instagram Post - Sunset", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "ig-post-3": { width: 1080, height: 1080, name: "Instagram Post - Ocean", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+  "ig-story-1": { width: 1080, height: 1920, name: "Instagram Story - Vibrant", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
+  "ig-story-2": { width: 1080, height: 1920, name: "Instagram Story - Dark", gradient: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
+  "ig-story-3": { width: 1080, height: 1920, name: "Instagram Story - Pastel", gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" },
   "fb-post-1": { width: 1200, height: 630, name: "Facebook Post", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "fb-post-2": { width: 820, height: 312, name: "Facebook Cover", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "fb-cover-1": { width: 820, height: 312, name: "Facebook Cover", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
   "twitter-post-1": { width: 1024, height: 512, name: "Twitter Post", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
   "twitter-header-1": { width: 1500, height: 500, name: "Twitter Header", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
   "linkedin-post-1": { width: 1200, height: 627, name: "LinkedIn Post", gradient: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
-  "pinterest-pin-1": { width: 1000, height: 1500, name: "Pinterest Pin", gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" },
-  "yt-thumb-1": { width: 1280, height: 720, name: "YouTube Thumbnail - Gaming", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "yt-thumb-2": { width: 1280, height: 720, name: "YouTube Thumbnail - Vlog", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  "yt-thumb-3": { width: 1280, height: 720, name: "YouTube Thumbnail - Tutorial", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-  "yt-banner-1": { width: 2560, height: 1440, name: "YouTube Banner", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
-  "yt-end-1": { width: 1920, height: 1080, name: "YouTube End Screen", gradient: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
-  "ad-banner-1": { width: 728, height: 90, name: "Display Ad - Leaderboard", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "ad-banner-2": { width: 300, height: 250, name: "Display Ad - Rectangle", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  "ad-banner-3": { width: 160, height: 600, name: "Display Ad - Skyscraper", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-  "email-header-1": { width: 600, height: 200, name: "Email Header", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
-  "infographic-1": { width: 800, height: 2000, name: "Infographic", gradient: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
-  "business-card-1": { width: 1050, height: 600, name: "Business Card", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "presentation-1": { width: 1920, height: 1080, name: "Presentation 16:9", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  "presentation-2": { width: 1024, height: 768, name: "Presentation 4:3", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-  "letterhead-1": { width: 816, height: 1056, name: "Letterhead", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
-  "invoice-1": { width: 816, height: 1056, name: "Invoice", gradient: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
-  "invitation-1": { width: 1080, height: 1350, name: "Event Invitation", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "flyer-1": { width: 2480, height: 3508, name: "Event Flyer A4", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+  "resume-1": { width: 816, height: 1056, name: "Professional Resume", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  "resume-2": { width: 816, height: 1056, name: "Modern Resume", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
   "poster-1": { width: 1080, height: 1920, name: "Event Poster", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-  "ticket-1": { width: 1000, height: 450, name: "Event Ticket", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
-  "worksheet-1": { width: 816, height: 1056, name: "Worksheet", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "certificate-1": { width: 1056, height: 816, name: "Certificate", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  "report-1": { width: 816, height: 1056, name: "Report Cover", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-  "brochure-1": { width: 3300, height: 2550, name: "Brochure Trifold", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  "menu-1": { width: 1275, height: 1650, name: "Restaurant Menu", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  "postcard-1": { width: 1800, height: 1200, name: "Postcard 4x6", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }
+  "poster-2": { width: 1080, height: 1920, name: "Movie Poster", gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" }
 };
 
-const GRADIENT_PRESETS = [
-  { name: "Sunset", value: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" },
-  { name: "Ocean", value: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-  { name: "Purple", value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
-  { name: "Pink", value: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-  { name: "Dark", value: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)" },
-  { name: "Pastel", value: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" }
+const COLOR_PALETTE = [
+  "#667eea", "#f093fb", "#4facfe", "#fa709a", "#30cfd0", 
+  "#a8edea", "#764ba2", "#f5576c", "#00f2fe", "#fee140"
 ];
 
 export default function Editor() {
@@ -257,7 +230,14 @@ export default function Editor() {
     reader.onload = (event) => {
       fabric.Image.fromURL(event.target.result, (img) => {
         const scale = Math.min(canvas.width * 0.5 / img.width, canvas.height * 0.5 / img.height);
-        img.set({ left: canvas.width / 2, top: canvas.height / 2, originX: "center", originY: "center", scaleX: scale, scaleY: scale });
+        img.set({ 
+          left: canvas.width / 2, 
+          top: canvas.height / 2, 
+          originX: "center", 
+          originY: "center", 
+          scaleX: scale, 
+          scaleY: scale 
+        });
         canvas.add(img);
         canvas.setActiveObject(img);
         canvas.renderAll();
@@ -283,18 +263,19 @@ export default function Editor() {
     reader.readAsDataURL(file);
   };
 
-  const applyGradientBackground = (gradientValue) => {
-    if (!canvas) return;
-    applyGradientToCanvas(canvas, gradientValue);
-    saveHistory(canvas);
-  };
-
   const addText = () => {
     if (!canvas) return;
     const text = textInput.trim() || "Double click to edit";
     const t = new fabric.Textbox(text, {
-      left: canvas.width / 2, top: canvas.height / 2, originX: "center", originY: "center",
-      fontSize, fill: textColor, fontFamily, textAlign: "center", width: 300
+      left: canvas.width / 2, 
+      top: canvas.height / 2, 
+      originX: "center", 
+      originY: "center",
+      fontSize, 
+      fill: textColor, 
+      fontFamily, 
+      textAlign: "center", 
+      width: 300
     });
     canvas.add(t);
     canvas.setActiveObject(t);
@@ -317,9 +298,12 @@ export default function Editor() {
     let shape;
     const center = { left: canvas.width / 2, top: canvas.height / 2, originX: "center", originY: "center" };
     switch(type) {
-      case "circle": shape = new fabric.Circle({ ...center, radius: 50, fill: fillColor }); break;
-      case "rectangle": shape = new fabric.Rect({ ...center, width: 100, height: 100, fill: fillColor }); break;
-      case "triangle": shape = new fabric.Triangle({ ...center, width: 100, height: 100, fill: fillColor }); break;
+      case "circle": 
+        shape = new fabric.Circle({ ...center, radius: 50, fill: fillColor }); 
+        break;
+      case "rectangle": 
+        shape = new fabric.Rect({ ...center, width: 100, height: 100, fill: fillColor }); 
+        break;
       default: return;
     }
     canvas.add(shape);
@@ -344,13 +328,6 @@ export default function Editor() {
       canvas.renderAll();
       saveHistory(canvas);
     });
-  };
-
-  const rotate = (angle) => {
-    if (!selectedObject || !canvas) return;
-    selectedObject.rotate((selectedObject.angle || 0) + angle);
-    canvas.renderAll();
-    saveHistory(canvas);
   };
 
   const handleZoom = (delta) => {
@@ -388,128 +365,313 @@ export default function Editor() {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "calc(100vh - 64px)", bgcolor: "#f5f5f5" }}>
-      <Box sx={{ position: "fixed", top: 64, left: 320, right: 320, bgcolor: "white", p: 1.5, zIndex: 10, boxShadow: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-          <TextField size="small" value={designTitle} onChange={(e) => setDesignTitle(e.target.value)} sx={{ width: 250 }} />
-          <ButtonGroup size="small">
-            <Tooltip title="Undo"><span><IconButton onClick={undo} disabled={historyStep <= 0}><Undo /></IconButton></span></Tooltip>
-            <Tooltip title="Redo"><span><IconButton onClick={redo} disabled={historyStep >= history.length - 1}><Redo /></IconButton></span></Tooltip>
-          </ButtonGroup>
-          <ButtonGroup size="small">
-            <IconButton onClick={() => handleZoom(-0.1)}><ZoomOut /></IconButton>
-            <Button disabled sx={{ minWidth: 80 }}>{Math.round(zoom * 100)}%</Button>
-            <IconButton onClick={() => handleZoom(0.1)}><ZoomIn /></IconButton>
-          </ButtonGroup>
-          <Button variant="contained" color="success" onClick={() => setShowSaveDialog(true)} startIcon={<Save />}>Save</Button>
-          <Button variant="outlined" onClick={exportImage} startIcon={<Download />}>Export</Button>
-        </Stack>
-      </Box>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", bgcolor: "#f5f7fa" }}>
+      {/* Top Toolbar */}
+      <AppBar position="static" elevation={1} sx={{ bgcolor: "white", color: "#1e293b" }}>
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <IconButton onClick={() => navigate("/dashboard")}>
+              <ArrowBack />
+            </IconButton>
+            <TextField 
+              size="small" 
+              value={designTitle} 
+              onChange={(e) => setDesignTitle(e.target.value)} 
+              sx={{ width: 250 }}
+              variant="outlined"
+            />
+          </Box>
 
-      <Paper sx={{ width: 320, position: "fixed", left: 0, top: 64, bottom: 0, overflowY: "auto" }}>
-        <Tabs value={leftTab} onChange={(e, v) => setLeftTab(v)} variant="fullWidth">
-          <Tab label="Elements" />
-          <Tab label="Text" />
-        </Tabs>
-        <Box sx={{ p: 2 }}>
-          {leftTab === 0 && (
-            <Stack spacing={2}>
-              <Button variant="contained" fullWidth onClick={() => fileInputRef.current.click()} startIcon={<ImageIcon />}>Upload Image</Button>
-              <input type="file" accept="image/*" ref={fileInputRef} style={{ display: "none" }} onChange={handleImageUpload} />
-              <Divider />
-              <Typography variant="subtitle2">Shapes</Typography>
-              <Grid container spacing={1}>
-                <Grid item xs={4}><Button fullWidth variant="outlined" onClick={() => addShape("circle")}><Circle /></Button></Grid>
-                <Grid item xs={4}><Button fullWidth variant="outlined" onClick={() => addShape("rectangle")}><Square /></Button></Grid>
-                <Grid item xs={4}><Button fullWidth variant="outlined" onClick={() => addShape("triangle")}>△</Button></Grid>
-              </Grid>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="caption">Fill:</Typography>
-                <input type="color" value={fillColor} onChange={(e)=>setFillColor(e.target.value)} style={{width:60,height:40,cursor:'pointer'}} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <ButtonGroup size="small" variant="outlined">
+              <Tooltip title="Undo">
+                <span>
+                  <IconButton onClick={undo} disabled={historyStep <= 0} size="small">
+                    <Undo fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title="Redo">
+                <span>
+                  <IconButton onClick={redo} disabled={historyStep >= history.length - 1} size="small">
+                    <Redo fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </ButtonGroup>
+
+            <ButtonGroup size="small" variant="outlined" sx={{ ml: 2 }}>
+              <IconButton onClick={() => handleZoom(-0.1)} size="small">
+                <ZoomOut fontSize="small" />
+              </IconButton>
+              <Button disabled sx={{ minWidth: 80, fontSize: "0.875rem" }}>
+                {Math.round(zoom * 100)}%
+              </Button>
+              <IconButton onClick={() => handleZoom(0.1)} size="small">
+                <ZoomIn fontSize="small" />
+              </IconButton>
+            </ButtonGroup>
+
+            <Button 
+              variant="contained" 
+              color="success" 
+              onClick={() => setShowSaveDialog(true)} 
+              startIcon={<Save />}
+              sx={{ ml: 2 }}
+            >
+              Save
+            </Button>
+            <Button 
+              variant="outlined" 
+              onClick={exportImage} 
+              startIcon={<Download />}
+            >
+              Download
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      <Box sx={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Left Sidebar */}
+        <Paper sx={{ width: 280, overflow: "auto", borderRadius: 0 }}>
+          <Tabs value={leftTab} onChange={(e, v) => setLeftTab(v)} variant="fullWidth">
+            <Tab label="Elements" />
+            <Tab label="Text" />
+          </Tabs>
+          <Box sx={{ p: 2 }}>
+            {leftTab === 0 && (
+              <Stack spacing={2}>
+                <Button 
+                  variant="contained" 
+                  fullWidth 
+                  onClick={() => fileInputRef.current.click()} 
+                  startIcon={<ImageIcon />}
+                >
+                  Upload Image
+                </Button>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  ref={fileInputRef} 
+                  style={{ display: "none" }} 
+                  onChange={handleImageUpload} 
+                />
+                <Divider />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Shapes</Typography>
+                <Grid container spacing={1}>
+                  <Grid item xs={6}>
+                    <Button 
+                      fullWidth 
+                      variant="outlined" 
+                      onClick={() => addShape("circle")}
+                      sx={{ py: 2 }}
+                    >
+                      <Circle />
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button 
+                      fullWidth 
+                      variant="outlined" 
+                      onClick={() => addShape("rectangle")}
+                      sx={{ py: 2 }}
+                    >
+                      <Square />
+                    </Button>
+                  </Grid>
+                </Grid>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mt: 2 }}>Colors</Typography>
+                <Grid container spacing={1}>
+                  {COLOR_PALETTE.map((color) => (
+                    <Grid item xs={2.4} key={color}>
+                      <Box
+                        onClick={() => setFillColor(color)}
+                        sx={{
+                          width: "100%",
+                          paddingTop: "100%",
+                          bgcolor: color,
+                          borderRadius: 1,
+                          cursor: "pointer",
+                          border: fillColor === color ? "3px solid #000" : "1px solid #ddd",
+                          transition: "all 0.2s"
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
               </Stack>
-            </Stack>
-          )}
-          {leftTab === 1 && (
-            <Stack spacing={2}>
-              <TextField multiline rows={2} label="Text" value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Enter text..." />
-              <Button variant="contained" onClick={addText} fullWidth startIcon={<TextFields />}>Add Text</Button>
-              <Divider />
-              <FormControl fullWidth>
-                <InputLabel>Font</InputLabel>
-                <Select value={fontFamily} onChange={(e) => {setFontFamily(e.target.value);updateTextProperty("fontFamily", e.target.value);}}>
-                  {FONTS.map((f) => <MenuItem key={f} value={f}>{f}</MenuItem>)}
-                </Select>
-              </FormControl>
-              <Typography variant="caption">Size: {fontSize}px</Typography>
-              <Slider min={12} max={150} value={fontSize} onChange={(e,v)=>{setFontSize(v);updateTextProperty("fontSize", v);}} />
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="caption">Color:</Typography>
-                <input type="color" value={textColor} onChange={(e) => {setTextColor(e.target.value);updateTextProperty("fill", e.target.value);}} style={{width:60,height:40,cursor:'pointer'}} />
+            )}
+            {leftTab === 1 && (
+              <Stack spacing={2}>
+                <TextField 
+                  multiline 
+                  rows={2} 
+                  label="Text" 
+                  value={textInput} 
+                  onChange={(e) => setTextInput(e.target.value)} 
+                  placeholder="Enter text..." 
+                />
+                <Button 
+                  variant="contained" 
+                  onClick={addText} 
+                  fullWidth 
+                  startIcon={<TextFields />}
+                >
+                  Add Text
+                </Button>
+                <Divider />
+                <FormControl fullWidth>
+                  <InputLabel>Font</InputLabel>
+                  <Select 
+                    value={fontFamily} 
+                    onChange={(e) => {
+                      setFontFamily(e.target.value);
+                      updateTextProperty("fontFamily", e.target.value);
+                    }}
+                  >
+                    {FONTS.map((f) => <MenuItem key={f} value={f}>{f}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <Typography variant="caption">Size: {fontSize}px</Typography>
+                <Slider 
+                  min={12} 
+                  max={150} 
+                  value={fontSize} 
+                  onChange={(e,v)=>{
+                    setFontSize(v);
+                    updateTextProperty("fontSize", v);
+                  }} 
+                />
+                <Box>
+                  <Typography variant="caption" sx={{ mb: 1, display: "block" }}>
+                    Color
+                  </Typography>
+                  <Grid container spacing={1}>
+                    {COLOR_PALETTE.map((color) => (
+                      <Grid item xs={2.4} key={color}>
+                        <Box
+                          onClick={() => {
+                            setTextColor(color);
+                            updateTextProperty("fill", color);
+                          }}
+                          sx={{
+                            width: "100%",
+                            paddingTop: "100%",
+                            bgcolor: color,
+                            borderRadius: 1,
+                            cursor: "pointer",
+                            border: textColor === color ? "3px solid #000" : "1px solid #ddd"
+                          }}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
               </Stack>
-            </Stack>
-          )}
+            )}
+          </Box>
+        </Paper>
+
+        {/* Canvas Area */}
+        <Box sx={{ 
+          flex: 1, 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          p: 2, 
+          overflow: "auto",
+          bgcolor: "#e2e8f0"
+        }}>
+          <Paper elevation={10} sx={{ p: 2 }}>
+            <canvas ref={canvasRef} />
+          </Paper>
         </Box>
-      </Paper>
 
-      <Box sx={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", mt: 8, ml: "320px", mr: "320px", p: 2, overflow: "auto" }}>
-        <Paper elevation={10} sx={{ p: 2 }}>
-          <canvas ref={canvasRef} />
+        {/* Right Sidebar */}
+        <Paper sx={{ width: 280, overflow: "auto", borderRadius: 0 }}>
+          <Tabs value={rightTab} onChange={(e, v) => setRightTab(v)} variant="fullWidth">
+            <Tab label="Background" />
+            <Tab label="Edit" />
+          </Tabs>
+          <Box sx={{ p: 2 }}>
+            {rightTab === 0 && (
+              <Stack spacing={2}>
+                <Button 
+                  variant="contained" 
+                  fullWidth 
+                  onClick={() => bgImageInputRef.current.click()}
+                >
+                  Upload Background
+                </Button>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  ref={bgImageInputRef} 
+                  style={{ display: "none" }} 
+                  onChange={handleBackgroundImage} 
+                />
+              </Stack>
+            )}
+            {rightTab === 1 && (
+              <Stack spacing={2}>
+                {selectedObject ? (
+                  <>
+                    <ButtonGroup fullWidth variant="outlined">
+                      <Button onClick={duplicate} startIcon={<ContentCopy />}>
+                        Copy
+                      </Button>
+                      <Button onClick={deleteSelected} color="error" startIcon={<Delete />}>
+                        Delete
+                      </Button>
+                    </ButtonGroup>
+                    <Typography variant="caption">Opacity: {Math.round(opacity * 100)}%</Typography>
+                    <Slider 
+                      value={opacity} 
+                      onChange={(e,v)=>{
+                        setOpacity(v);
+                        selectedObject.set("opacity", v);
+                        canvas.renderAll();
+                      }} 
+                      min={0} 
+                      max={1} 
+                      step={0.01} 
+                    />
+                  </>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Select an object to edit
+                  </Typography>
+                )}
+              </Stack>
+            )}
+          </Box>
         </Paper>
       </Box>
 
-      <Paper sx={{ width: 320, position: "fixed", right: 0, top: 64, bottom: 0, overflowY: "auto" }}>
-        <Tabs value={rightTab} onChange={(e, v) => setRightTab(v)} variant="fullWidth">
-          <Tab label="Background" />
-          <Tab label="Edit" />
-        </Tabs>
-        <Box sx={{ p: 2 }}>
-          {rightTab === 0 && (
-            <Stack spacing={2}>
-              <Button variant="contained" fullWidth onClick={() => bgImageInputRef.current.click()}>Upload Background</Button>
-              <input type="file" accept="image/*" ref={bgImageInputRef} style={{ display: "none" }} onChange={handleBackgroundImage} />
-              <Divider />
-              <Typography variant="subtitle2">Gradient Presets</Typography>
-              <Grid container spacing={1}>
-                {GRADIENT_PRESETS.map((grad) => (
-                  <Grid item xs={6} key={grad.name}>
-                    <Button fullWidth variant="outlined" onClick={() => applyGradientBackground(grad.value)} sx={{ background: grad.value, color: 'white', '&:hover': { opacity: 0.8 } }}>{grad.name}</Button>
-                  </Grid>
-                ))}
-              </Grid>
-            </Stack>
-          )}
-          {rightTab === 1 && (
-            <Stack spacing={2}>
-              {selectedObject ? (
-                <>
-                  <ButtonGroup fullWidth>
-                    <Button onClick={duplicate} startIcon={<ContentCopy />}>Duplicate</Button>
-                    <Button onClick={deleteSelected} color="error" startIcon={<Delete />}>Delete</Button>
-                  </ButtonGroup>
-                  <ButtonGroup fullWidth>
-                    <Button onClick={() => rotate(-15)} startIcon={<RotateLeft />}>Rotate L</Button>
-                    <Button onClick={() => rotate(15)} startIcon={<RotateRight />}>Rotate R</Button>
-                  </ButtonGroup>
-                  <Typography variant="caption">Opacity: {Math.round(opacity * 100)}%</Typography>
-                  <Slider value={opacity} onChange={(e,v)=>{setOpacity(v);selectedObject.set("opacity", v);canvas.renderAll();}} min={0} max={1} step={0.01} />
-                </>
-              ) : (
-                <Typography variant="body2" color="text.secondary">Select an object to edit</Typography>
-              )}
-            </Stack>
-          )}
-        </Box>
-      </Paper>
-
+      {/* Save Dialog */}
       <Dialog open={showSaveDialog} onClose={() => setShowSaveDialog(false)}>
         <DialogTitle>Save Design</DialogTitle>
         <DialogContent>
           {saveStatus && <Alert severity={saveStatus.type} sx={{ mb: 2 }}>{saveStatus.message}</Alert>}
-          <TextField autoFocus margin="dense" label="Design Title" fullWidth value={designTitle} onChange={(e) => setDesignTitle(e.target.value)} />
+          <TextField 
+            autoFocus 
+            margin="dense" 
+            label="Design Title" 
+            fullWidth 
+            value={designTitle} 
+            onChange={(e) => setDesignTitle(e.target.value)} 
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowSaveDialog(false)}>Cancel</Button>
-          <Button onClick={saveDesign} variant="contained" disabled={saveStatus?.type === 'info'}>Save</Button>
+          <Button 
+            onClick={saveDesign} 
+            variant="contained" 
+            disabled={saveStatus?.type === 'info'}
+          >
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
