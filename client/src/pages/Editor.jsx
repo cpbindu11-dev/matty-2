@@ -5,13 +5,15 @@ import {
   Box, Button, TextField, Paper, Stack, Typography, Divider, Select, MenuItem,
   FormControl, InputLabel, Slider, Tabs, Tab, IconButton, ButtonGroup, Grid,
   Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, AppBar, Toolbar,
-  ToggleButton, ToggleButtonGroup, Chip
+  ToggleButton, ToggleButtonGroup, Chip, Card, CardContent
 } from "@mui/material";
 import {
   Delete, Save, Download, Image as ImageIcon, Undo, Redo, ContentCopy, 
   ZoomIn, ZoomOut, TextFields, Circle, Square, RotateLeft, RotateRight, ArrowBack,
   FormatBold, FormatItalic, FormatUnderlined, Star, Favorite, EmojiEmotions,
-  Gradient, Brightness4, FilterBAndW, Blur, Opacity as OpacityIcon
+  Gradient, Brightness4, FilterBAndW, Blur, Opacity as OpacityIcon, Crop,
+  ContentCut, AutoFixHigh, ColorLens, GridOn, Tune, PhotoFilter, Camera,
+  FlipToFront, FlipToBack, AspectRatio, Collections
 } from "@mui/icons-material";
 import API from "../utils/api";
 
@@ -51,10 +53,30 @@ const SHAPES = [
   { type: "line", icon: "━", label: "Line" }
 ];
 
+const PHOTO_FILTERS = [
+  { name: "Original", filters: [] },
+  { name: "Grayscale", filters: [{ type: "Grayscale" }] },
+  { name: "Sepia", filters: [{ type: "Sepia" }] },
+  { name: "Vintage", filters: [{ type: "Sepia" }, { type: "Brightness", value: -0.2 }] },
+  { name: "Brightness", filters: [{ type: "Brightness", value: 0.3 }] },
+  { name: "High Contrast", filters: [{ type: "Contrast", value: 0.5 }] },
+  { name: "Invert", filters: [{ type: "Invert" }] },
+  { name: "Pixelate", filters: [{ type: "Pixelate", blocksize: 8 }] },
+  { name: "Blur", filters: [{ type: "Blur", blur: 0.3 }] },
+];
+
+const STICKER_SHAPES = [
+  { name: "Circle", path: null, type: "circle" },
+  { name: "Heart", path: "M140,20C73,20,20,74,20,140c0,135,136,170,228,303c88-132,229-173,229-303c0-66-54-120-120-120c-48,0-90,28-109,69c-19-41-60-69-108-69Z" },
+  { name: "Star", path: null, type: "star" },
+  { name: "Rounded Square", path: "M20,0h960c11,0,20,9,20,20v960c0,11-9,20-20,20H20c-11,0-20-9-20-20V20C0,9,9,0,20,0z" },
+];
+
 export default function Editor() {
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const bgImageInputRef = useRef(null);
+  const collageInputRef = useRef(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -67,6 +89,8 @@ export default function Editor() {
   const [historyStep, setHistoryStep] = useState(-1);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
+  const [cropMode, setCropMode] = useState(false);
+  const [collageMode, setCollageMode] = useState(false);
   
   // Text properties
   const [textInput, setTextInput] = useState("");
@@ -85,11 +109,15 @@ export default function Editor() {
   const [opacity, setOpacity] = useState(1);
   const [zoom, setZoom] = useState(1);
   
-  // Image filters
+  // Advanced image filters
   const [brightness, setBrightness] = useState(0);
   const [contrast, setContrast] = useState(0);
   const [saturation, setSaturation] = useState(0);
   const [blur, setBlur] = useState(0);
+  const [hue, setHue] = useState(0);
+  const [noise, setNoise] = useState(0);
+  const [pixelate, setPixelate] = useState(0);
+  const [sharpen, setSharpen] = useState(0);
 
   useEffect(() => {
     const templateId = searchParams.get("template");
@@ -109,7 +137,6 @@ export default function Editor() {
 
     setCanvas(c);
 
-    // Apply gradient background
     if (template.colors && template.colors.length >= 2) {
       const gradient = new fabric.Gradient({
         type: 'linear',
@@ -228,12 +255,8 @@ export default function Editor() {
     setStrokeWidth(obj.strokeWidth || 0);
     setOpacity(obj.opacity || 1);
     
-    // Reset filters for images
     if (obj.type === "image") {
-      setBrightness(0);
-      setContrast(0);
-      setSaturation(0);
-      setBlur(0);
+      resetImageFilters();
     }
   };
 
@@ -249,6 +272,17 @@ export default function Editor() {
     setStrokeColor("#000000");
     setStrokeWidth(0);
     setOpacity(1);
+  };
+
+  const resetImageFilters = () => {
+    setBrightness(0);
+    setContrast(0);
+    setSaturation(0);
+    setBlur(0);
+    setHue(0);
+    setNoise(0);
+    setPixelate(0);
+    setSharpen(0);
   };
 
   const saveHistory = (canvasInstance) => {
@@ -314,6 +348,151 @@ export default function Editor() {
       });
     };
     reader.readAsDataURL(file);
+  };
+
+  // NEW: Collage Mode - Add multiple images
+  const handleCollageImages = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !canvas) return;
+
+    const gridSize = Math.ceil(Math.sqrt(files.length));
+    const cellWidth = canvas.width / gridSize;
+    const cellHeight = canvas.height / gridSize;
+
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        fabric.Image.fromURL(event.target.result, (img) => {
+          const row = Math.floor(index / gridSize);
+          const col = index % gridSize;
+          
+          const scale = Math.min(cellWidth / img.width, cellHeight / img.height) * 0.9;
+          
+          img.set({
+            left: col * cellWidth + cellWidth / 2,
+            top: row * cellHeight + cellHeight / 2,
+            originX: "center",
+            originY: "center",
+            scaleX: scale,
+            scaleY: scale
+          });
+          
+          canvas.add(img);
+          canvas.renderAll();
+          
+          if (index === files.length - 1) {
+            saveHistory(canvas);
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // NEW: Convert image to sticker with shape mask
+  const createSticker = (shapeType) => {
+    if (!selectedObject || !canvas || selectedObject.type !== "image") {
+      alert("Please select an image first!");
+      return;
+    }
+
+    const img = selectedObject;
+    let clipPath;
+
+    if (shapeType === "circle") {
+      const radius = Math.min(img.width, img.height) / 2;
+      clipPath = new fabric.Circle({
+        radius: radius,
+        originX: "center",
+        originY: "center"
+      });
+    } else if (shapeType === "star") {
+      const points = [];
+      const numPoints = 5;
+      const outerRadius = Math.min(img.width, img.height) / 2;
+      const innerRadius = outerRadius * 0.5;
+      
+      for (let i = 0; i < numPoints * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (Math.PI * i) / numPoints;
+        points.push({
+          x: radius * Math.sin(angle),
+          y: -radius * Math.cos(angle)
+        });
+      }
+      
+      clipPath = new fabric.Polygon(points, {
+        originX: "center",
+        originY: "center"
+      });
+    } else {
+      const shape = STICKER_SHAPES.find(s => s.name === shapeType);
+      if (shape && shape.path) {
+        clipPath = new fabric.Path(shape.path, {
+          originX: "center",
+          originY: "center",
+          scaleX: Math.min(img.width, img.height) / 1000,
+          scaleY: Math.min(img.width, img.height) / 1000
+        });
+      }
+    }
+
+    if (clipPath) {
+      img.set({
+        clipPath: clipPath
+      });
+      canvas.renderAll();
+      saveHistory(canvas);
+    }
+  };
+
+  // NEW: Remove background (simple version - makes white transparent)
+  const removeBackground = () => {
+    if (!selectedObject || !canvas || selectedObject.type !== "image") {
+      alert("Please select an image first!");
+      return;
+    }
+
+    const imgElement = selectedObject.getElement();
+    const tempCanvas = document.createElement('canvas');
+    const ctx = tempCanvas.getContext('2d');
+    
+    tempCanvas.width = imgElement.width;
+    tempCanvas.height = imgElement.height;
+    ctx.drawImage(imgElement, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+    
+    // Simple algorithm: remove white/light colored pixels
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // If pixel is close to white, make it transparent
+      if (r > 240 && g > 240 && b > 240) {
+        data[i + 3] = 0; // Set alpha to 0
+      }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    fabric.Image.fromURL(tempCanvas.toDataURL(), (newImg) => {
+      newImg.set({
+        left: selectedObject.left,
+        top: selectedObject.top,
+        scaleX: selectedObject.scaleX,
+        scaleY: selectedObject.scaleY,
+        angle: selectedObject.angle
+      });
+      
+      canvas.remove(selectedObject);
+      canvas.add(newImg);
+      canvas.setActiveObject(newImg);
+      canvas.renderAll();
+      saveHistory(canvas);
+    });
   };
 
   const addText = () => {
@@ -413,19 +592,18 @@ export default function Editor() {
     saveHistory(canvas);
   };
 
-  const applyImageFilter = (filterType, value) => {
+  // NEW: Apply advanced image filters
+  const applyAdvancedFilter = (filterType, value) => {
     if (!selectedObject || !canvas || selectedObject.type !== "image") return;
     
     selectedObject.filters = selectedObject.filters || [];
     
-    // Remove existing filter of same type
     selectedObject.filters = selectedObject.filters.filter(f => {
       const filterName = f.type || f.constructor.name;
       return filterName !== filterType;
     });
     
-    // Add new filter if value is not default
-    if (value !== 0 || filterType === "Grayscale") {
+    if (value !== 0 || ["Grayscale", "Sepia", "Invert"].includes(filterType)) {
       let filter;
       switch(filterType) {
         case "Brightness":
@@ -440,14 +618,76 @@ export default function Editor() {
         case "Blur":
           filter = new fabric.Image.filters.Blur({ blur: value / 100 });
           break;
+        case "HueRotation":
+          filter = new fabric.Image.filters.HueRotation({ rotation: value / 100 });
+          break;
+        case "Noise":
+          filter = new fabric.Image.filters.Noise({ noise: value });
+          break;
+        case "Pixelate":
+          if (value > 0) {
+            filter = new fabric.Image.filters.Pixelate({ blocksize: Math.max(2, Math.floor(value / 10)) });
+          }
+          break;
         case "Grayscale":
           filter = new fabric.Image.filters.Grayscale();
+          break;
+        case "Sepia":
+          filter = new fabric.Image.filters.Sepia();
+          break;
+        case "Invert":
+          filter = new fabric.Image.filters.Invert();
           break;
         default:
           return;
       }
-      selectedObject.filters.push(filter);
+      if (filter) {
+        selectedObject.filters.push(filter);
+      }
     }
+    
+    selectedObject.applyFilters();
+    canvas.renderAll();
+    saveHistory(canvas);
+  };
+
+  // NEW: Apply preset filter
+  const applyPresetFilter = (preset) => {
+    if (!selectedObject || !canvas || selectedObject.type !== "image") return;
+    
+    selectedObject.filters = [];
+    
+    preset.filters.forEach(filterConfig => {
+      let filter;
+      switch(filterConfig.type) {
+        case "Grayscale":
+          filter = new fabric.Image.filters.Grayscale();
+          break;
+        case "Sepia":
+          filter = new fabric.Image.filters.Sepia();
+          break;
+        case "Brightness":
+          filter = new fabric.Image.filters.Brightness({ brightness: filterConfig.value });
+          break;
+        case "Contrast":
+          filter = new fabric.Image.filters.Contrast({ contrast: filterConfig.value });
+          break;
+        case "Invert":
+          filter = new fabric.Image.filters.Invert();
+          break;
+        case "Pixelate":
+          filter = new fabric.Image.filters.Pixelate({ blocksize: filterConfig.blocksize });
+          break;
+        case "Blur":
+          filter = new fabric.Image.filters.Blur({ blur: filterConfig.blur });
+          break;
+        default:
+          break;
+      }
+      if (filter) {
+        selectedObject.filters.push(filter);
+      }
+    });
     
     selectedObject.applyFilters();
     canvas.renderAll();
@@ -476,6 +716,17 @@ export default function Editor() {
     if (!selectedObject || !canvas) return;
     const angle = direction === "left" ? -90 : 90;
     selectedObject.rotate((selectedObject.angle || 0) + angle);
+    canvas.renderAll();
+    saveHistory(canvas);
+  };
+
+  const flipObject = (direction) => {
+    if (!selectedObject || !canvas) return;
+    if (direction === "horizontal") {
+      selectedObject.set("flipX", !selectedObject.flipX);
+    } else {
+      selectedObject.set("flipY", !selectedObject.flipY);
+    }
     canvas.renderAll();
     saveHistory(canvas);
   };
@@ -589,6 +840,7 @@ export default function Editor() {
             <Tab label="Elements" />
             <Tab label="Text" />
             <Tab label="Shapes" />
+            <Tab label="Photo Edit" />
           </Tabs>
           <Box sx={{ p: 2 }}>
             {/* Elements Tab */}
@@ -614,6 +866,7 @@ export default function Editor() {
                   variant="outlined" 
                   fullWidth 
                   onClick={() => bgImageInputRef.current.click()}
+                  startIcon={<Camera />}
                 >
                   Set Background Image
                 </Button>
@@ -624,6 +877,27 @@ export default function Editor() {
                   style={{ display: "none" }} 
                   onChange={handleBackgroundImage} 
                 />
+                
+                <Button 
+                  variant="outlined" 
+                  fullWidth 
+                  onClick={() => collageInputRef.current.click()}
+                  startIcon={<Collections />}
+                  color="secondary"
+                >
+                  Create Collage
+                </Button>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  multiple
+                  ref={collageInputRef} 
+                  style={{ display: "none" }} 
+                  onChange={handleCollageImages} 
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>
+                  Select multiple images to create an automatic grid collage
+                </Typography>
                 
                 <Divider />
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Color Palette</Typography>
@@ -853,36 +1127,175 @@ export default function Editor() {
                     }} 
                   />
                 </Box>
-                
-                <Box>
-                  <Typography variant="caption" sx={{ mb: 1, display: "block" }}>
-                    Stroke Color
-                  </Typography>
-                  <Grid container spacing={1}>
-                    {COLOR_PALETTE.slice(10, 20).map((color) => (
-                      <Grid item xs={2.4} key={color}>
-                        <Box
-                          onClick={() => {
-                            setStrokeColor(color);
-                            if (selectedObject && strokeWidth > 0) {
-                              selectedObject.set("stroke", color);
-                              canvas.renderAll();
-                              saveHistory(canvas);
-                            }
-                          }}
-                          sx={{
-                            width: "100%",
-                            paddingTop: "100%",
-                            bgcolor: color,
-                            borderRadius: 1,
-                            cursor: "pointer",
-                            border: strokeColor === color ? "3px solid #000" : "1px solid #ddd"
-                          }}
-                        />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Box>
+              </Stack>
+            )}
+
+            {/* NEW: Photo Edit Tab */}
+            {leftTab === 3 && (
+              <Stack spacing={2}>
+                {selectedObject && selectedObject.type === "image" ? (
+                  <>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      ✨ Quick Filters
+                    </Typography>
+                    <Grid container spacing={1}>
+                      {PHOTO_FILTERS.map((filter) => (
+                        <Grid item xs={4} key={filter.name}>
+                          <Card 
+                            sx={{ 
+                              cursor: "pointer",
+                              transition: "all 0.2s",
+                              "&:hover": { transform: "scale(1.05)" }
+                            }}
+                            onClick={() => applyPresetFilter(filter)}
+                          >
+                            <CardContent sx={{ p: 1, textAlign: "center" }}>
+                              <PhotoFilter sx={{ mb: 0.5 }} />
+                              <Typography variant="caption">{filter.name}</Typography>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+
+                    <Divider />
+
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      🎨 Advanced Adjustments
+                    </Typography>
+
+                    <Box>
+                      <Typography variant="caption">Brightness: {brightness}</Typography>
+                      <Slider 
+                        value={brightness} 
+                        onChange={(e,v)=>{
+                          setBrightness(v);
+                          applyAdvancedFilter("Brightness", v);
+                        }} 
+                        min={-100} 
+                        max={100}
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption">Contrast: {contrast}</Typography>
+                      <Slider 
+                        value={contrast} 
+                        onChange={(e,v)=>{
+                          setContrast(v);
+                          applyAdvancedFilter("Contrast", v);
+                        }} 
+                        min={-100} 
+                        max={100}
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption">Saturation: {saturation}</Typography>
+                      <Slider 
+                        value={saturation} 
+                        onChange={(e,v)=>{
+                          setSaturation(v);
+                          applyAdvancedFilter("Saturation", v);
+                        }} 
+                        min={-100} 
+                        max={100}
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption">Blur: {blur}</Typography>
+                      <Slider 
+                        value={blur} 
+                        onChange={(e,v)=>{
+                          setBlur(v);
+                          applyAdvancedFilter("Blur", v);
+                        }} 
+                        min={0} 
+                        max={100}
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption">Hue Rotation: {hue}°</Typography>
+                      <Slider 
+                        value={hue} 
+                        onChange={(e,v)=>{
+                          setHue(v);
+                          applyAdvancedFilter("HueRotation", v);
+                        }} 
+                        min={-180} 
+                        max={180}
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption">Noise: {noise}</Typography>
+                      <Slider 
+                        value={noise} 
+                        onChange={(e,v)=>{
+                          setNoise(v);
+                          applyAdvancedFilter("Noise", v);
+                        }} 
+                        min={0} 
+                        max={1000}
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption">Pixelate: {pixelate}</Typography>
+                      <Slider 
+                        value={pixelate} 
+                        onChange={(e,v)=>{
+                          setPixelate(v);
+                          applyAdvancedFilter("Pixelate", v);
+                        }} 
+                        min={0} 
+                        max={100}
+                      />
+                    </Box>
+
+                    <Divider />
+
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      ✂️ Sticker Maker
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Cut your image into fun shapes!
+                    </Typography>
+                    <Grid container spacing={1}>
+                      {STICKER_SHAPES.map((shape) => (
+                        <Grid item xs={6} key={shape.name}>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            onClick={() => createSticker(shape.type || shape.name)}
+                            startIcon={<ContentCut />}
+                          >
+                            {shape.name}
+                          </Button>
+                        </Grid>
+                      ))}
+                    </Grid>
+
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="secondary"
+                      onClick={removeBackground}
+                      startIcon={<AutoFixHigh />}
+                    >
+                      Remove White Background
+                    </Button>
+                    <Typography variant="caption" color="text.secondary">
+                      Removes white/light colored backgrounds
+                    </Typography>
+                  </>
+                ) : (
+                  <Alert severity="info">
+                    Select an image to access photo editing tools!
+                  </Alert>
+                )}
               </Stack>
             )}
           </Box>
@@ -927,14 +1340,48 @@ export default function Editor() {
                       </Button>
                     </ButtonGroup>
                     
-                    <ButtonGroup fullWidth variant="outlined">
-                      <Button onClick={() => rotateObject("left")} startIcon={<RotateLeft />}>
-                        Rotate L
-                      </Button>
-                      <Button onClick={() => rotateObject("right")} startIcon={<RotateRight />}>
-                        Rotate R
-                      </Button>
-                    </ButtonGroup>
+                    <Grid container spacing={1}>
+                      <Grid item xs={6}>
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          onClick={() => rotateObject("left")}
+                          startIcon={<RotateLeft />}
+                        >
+                          Rotate L
+                        </Button>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          onClick={() => rotateObject("right")}
+                          startIcon={<RotateRight />}
+                        >
+                          Rotate R
+                        </Button>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          onClick={() => flipObject("horizontal")}
+                          startIcon={<AspectRatio />}
+                        >
+                          Flip H
+                        </Button>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          onClick={() => flipObject("vertical")}
+                          startIcon={<AspectRatio sx={{ transform: "rotate(90deg)" }} />}
+                        >
+                          Flip V
+                        </Button>
+                      </Grid>
+                    </Grid>
                     
                     <Divider />
                     
@@ -954,110 +1401,30 @@ export default function Editor() {
                       />
                     </Box>
                     
-                    {selectedObject.type === "image" && (
-                      <>
-                        <Divider />
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                          Image Filters
-                        </Typography>
-                        
-                        <Box>
-                          <Typography variant="caption">
-                            Brightness: {brightness}
-                          </Typography>
-                          <Slider 
-                            value={brightness} 
-                            onChange={(e,v)=>{
-                              setBrightness(v);
-                              applyImageFilter("Brightness", v);
-                            }} 
-                            min={-100} 
-                            max={100} 
-                            step={1}
-                          />
-                        </Box>
-                        
-                        <Box>
-                          <Typography variant="caption">
-                            Contrast: {contrast}
-                          </Typography>
-                          <Slider 
-                            value={contrast} 
-                            onChange={(e,v)=>{
-                              setContrast(v);
-                              applyImageFilter("Contrast", v);
-                            }} 
-                            min={-100} 
-                            max={100} 
-                            step={1}
-                          />
-                        </Box>
-                        
-                        <Box>
-                          <Typography variant="caption">
-                            Saturation: {saturation}
-                          </Typography>
-                          <Slider 
-                            value={saturation} 
-                            onChange={(e,v)=>{
-                              setSaturation(v);
-                              applyImageFilter("Saturation", v);
-                            }} 
-                            min={-100} 
-                            max={100} 
-                            step={1}
-                          />
-                        </Box>
-                        
-                        <Box>
-                          <Typography variant="caption">
-                            Blur: {blur}
-                          </Typography>
-                          <Slider 
-                            value={blur} 
-                            onChange={(e,v)=>{
-                              setBlur(v);
-                              applyImageFilter("Blur", v);
-                            }} 
-                            min={0} 
-                            max={100} 
-                            step={1}
-                          />
-                        </Box>
-                        
-                        <Button 
-                          variant="outlined" 
-                          fullWidth
-                          startIcon={<FilterBAndW />}
-                          onClick={() => applyImageFilter("Grayscale", 1)}
-                        >
-                          Grayscale
-                        </Button>
-                      </>
-                    )}
-                    
                     <Button 
+                      fullWidth
                       variant="outlined" 
                       color="warning"
-                      fullWidth
                       onClick={() => {
                         selectedObject.bringToFront();
                         canvas.renderAll();
                         saveHistory(canvas);
                       }}
+                      startIcon={<FlipToFront />}
                     >
                       Bring to Front
                     </Button>
                     
                     <Button 
+                      fullWidth
                       variant="outlined" 
                       color="warning"
-                      fullWidth
                       onClick={() => {
                         selectedObject.sendToBack();
                         canvas.renderAll();
                         saveHistory(canvas);
                       }}
+                      startIcon={<FlipToBack />}
                     >
                       Send to Back
                     </Button>
@@ -1077,8 +1444,8 @@ export default function Editor() {
                 </Typography>
                 
                 <Button 
+                  fullWidth
                   variant="contained" 
-                  fullWidth 
                   onClick={() => bgImageInputRef.current.click()}
                   startIcon={<ImageIcon />}
                 >
