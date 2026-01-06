@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { 
   Box, Button, Typography, Paper, Grid, Card, CardMedia, CardContent, 
   CardActions, IconButton, Container, Chip, Tabs, Tab,
-  InputAdornment, TextField, Dialog, DialogTitle, DialogContent, DialogActions
+  InputAdornment, TextField
 } from "@mui/material";
 import { 
   Delete as DeleteIcon, Edit as EditIcon, Add as AddIcon,
-  Search, TrendingUp, EmojiEmotions, Star, Favorite, Face, Pets,
-  Nature, Sports, Restaurant, Flight, DirectionsCar, Computer
+  Search, TrendingUp
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import API from "../utils/api";
@@ -51,50 +50,12 @@ const PRESET_TEMPLATES = [
   { id: "poster-2", title: "Movie Poster", category: "Posters", width: 1080, height: 1920, gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", popular: false },
 ];
 
-// NEW: Sticker categories and collections
-const STICKER_CATEGORIES = [
-  { name: "All", icon: <EmojiEmotions /> },
-  { name: "Emoji", icon: <Face /> },
-  { name: "Animals", icon: <Pets /> },
-  { name: "Nature", icon: <Nature /> },
-  { name: "Sports", icon: <Sports /> },
-  { name: "Food", icon: <Restaurant /> },
-  { name: "Travel", icon: <Flight /> },
-  { name: "Tech", icon: <Computer /> },
-];
-
-// Sample sticker data (in a real app, these would be image URLs)
-const STICKER_LIBRARY = [
-  { id: "s1", name: "Happy Face", category: "Emoji", emoji: "😊", url: "https://em-content.zobj.net/thumbs/240/apple/354/grinning-face-with-smiling-eyes_1f604.png" },
-  { id: "s2", name: "Heart", category: "Emoji", emoji: "❤️", url: "https://em-content.zobj.net/thumbs/240/apple/354/red-heart_2764-fe0f.png" },
-  { id: "s3", name: "Star", category: "Emoji", emoji: "⭐", url: "https://em-content.zobj.net/thumbs/240/apple/354/star_2b50.png" },
-  { id: "s4", name: "Fire", category: "Emoji", emoji: "🔥", url: "https://em-content.zobj.net/thumbs/240/apple/354/fire_1f525.png" },
-  { id: "s5", name: "Thumbs Up", category: "Emoji", emoji: "👍", url: "https://em-content.zobj.net/thumbs/240/apple/354/thumbs-up_1f44d.png" },
-  { id: "s6", name: "Dog", category: "Animals", emoji: "🐕", url: "https://em-content.zobj.net/thumbs/240/apple/354/dog_1f415.png" },
-  { id: "s7", name: "Cat", category: "Animals", emoji: "🐱", url: "https://em-content.zobj.net/thumbs/240/apple/354/cat-face_1f431.png" },
-  { id: "s8", name: "Panda", category: "Animals", emoji: "🐼", url: "https://em-content.zobj.net/thumbs/240/apple/354/panda_1f43c.png" },
-  { id: "s9", name: "Tree", category: "Nature", emoji: "🌲", url: "https://em-content.zobj.net/thumbs/240/apple/354/evergreen-tree_1f332.png" },
-  { id: "s10", name: "Flower", category: "Nature", emoji: "🌸", url: "https://em-content.zobj.net/thumbs/240/apple/354/cherry-blossom_1f338.png" },
-  { id: "s11", name: "Sun", category: "Nature", emoji: "☀️", url: "https://em-content.zobj.net/thumbs/240/apple/354/sun_2600-fe0f.png" },
-  { id: "s12", name: "Soccer", category: "Sports", emoji: "⚽", url: "https://em-content.zobj.net/thumbs/240/apple/354/soccer-ball_26bd.png" },
-  { id: "s13", name: "Basketball", category: "Sports", emoji: "🏀", url: "https://em-content.zobj.net/thumbs/240/apple/354/basketball_1f3c0.png" },
-  { id: "s14", name: "Pizza", category: "Food", emoji: "🍕", url: "https://em-content.zobj.net/thumbs/240/apple/354/pizza_1f355.png" },
-  { id: "s15", name: "Burger", category: "Food", emoji: "🍔", url: "https://em-content.zobj.net/thumbs/240/apple/354/hamburger_1f354.png" },
-  { id: "s16", name: "Plane", category: "Travel", emoji: "✈️", url: "https://em-content.zobj.net/thumbs/240/apple/354/airplane_2708-fe0f.png" },
-  { id: "s17", name: "Car", category: "Travel", emoji: "🚗", url: "https://em-content.zobj.net/thumbs/240/apple/354/automobile_1f697.png" },
-  { id: "s18", name: "Laptop", category: "Tech", emoji: "💻", url: "https://em-content.zobj.net/thumbs/240/apple/354/laptop_1f4bb.png" },
-];
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All Templates");
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // NEW: Sticker browser state
-  const [stickerDialogOpen, setStickerDialogOpen] = useState(false);
-  const [selectedStickerCategory, setSelectedStickerCategory] = useState("All");
 
   useEffect(() => {
     fetchDesigns();
@@ -128,16 +89,6 @@ export default function Dashboard() {
     const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
-
-  // NEW: Filter stickers by category
-  const filteredStickers = STICKER_LIBRARY.filter(sticker => 
-    selectedStickerCategory === "All" || sticker.category === selectedStickerCategory
-  );
-
-  // NEW: Handle sticker selection
-  const handleStickerSelect = (sticker) => {
-    navigate(`/editor?sticker=${sticker.id}&stickerUrl=${encodeURIComponent(sticker.url)}`);
-  };
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fa" }}>
@@ -198,72 +149,6 @@ export default function Dashboard() {
       </Box>
 
       <Container maxWidth="xl">
-        {/* NEW: Create Design CTA - Moved to Top */}
-        <Paper 
-          sx={{ 
-            p: 6, 
-            textAlign: "center", 
-            borderRadius: 4, 
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            mb: 4,
-            boxShadow: "0 12px 24px rgba(102, 126, 234, 0.3)"
-          }}
-        >
-          <Typography variant="h4" sx={{ fontWeight: 800, color: "white", mb: 2 }}>
-            ✨ Start Creating
-          </Typography>
-          <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.9)", mb: 4 }}>
-            Create your own custom design or browse our sticker library
-          </Typography>
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => navigate("/editor")}
-              startIcon={<AddIcon />}
-              sx={{
-                px: 6,
-                py: 2,
-                fontSize: "1.1rem",
-                fontWeight: 700,
-                borderRadius: 3,
-                bgcolor: "white",
-                color: "#667eea",
-                boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
-                "&:hover": { 
-                  bgcolor: "#f8f9fa",
-                  transform: "scale(1.05)"
-                }
-              }}
-            >
-              Create New Design
-            </Button>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => setStickerDialogOpen(true)}
-              startIcon={<EmojiEmotions />}
-              sx={{
-                px: 6,
-                py: 2,
-                fontSize: "1.1rem",
-                fontWeight: 700,
-                borderRadius: 3,
-                bgcolor: "rgba(255,255,255,0.2)",
-                color: "white",
-                border: "2px solid white",
-                boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
-                "&:hover": { 
-                  bgcolor: "rgba(255,255,255,0.3)",
-                  transform: "scale(1.05)"
-                }
-              }}
-            >
-              Browse Stickers
-            </Button>
-          </Box>
-        </Paper>
-
         {/* Category Tabs */}
         <Box sx={{ 
           bgcolor: "white", 
@@ -377,6 +262,47 @@ export default function Dashboard() {
           ))}
         </Grid>
 
+        {/* Start from Scratch CTA */}
+        <Paper 
+          sx={{ 
+            p: 6, 
+            textAlign: "center", 
+            borderRadius: 4, 
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            mb: 6,
+            boxShadow: "0 12px 24px rgba(102, 126, 234, 0.3)"
+          }}
+        >
+          <Typography variant="h4" sx={{ fontWeight: 800, color: "white", mb: 2 }}>
+            ✨ Start from Scratch
+          </Typography>
+          <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.9)", mb: 4 }}>
+            Create your own custom design with our powerful editor
+          </Typography>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate("/editor")}
+            startIcon={<AddIcon />}
+            sx={{
+              px: 6,
+              py: 2,
+              fontSize: "1.1rem",
+              fontWeight: 700,
+              borderRadius: 3,
+              bgcolor: "white",
+              color: "#667eea",
+              boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
+              "&:hover": { 
+                bgcolor: "#f8f9fa",
+                transform: "scale(1.05)"
+              }
+            }}
+          >
+            Create New Design
+          </Button>
+        </Paper>
+
         {/* My Designs Section */}
         {designs.length > 0 && (
           <Box sx={{ mb: 6 }}>
@@ -429,78 +355,6 @@ export default function Dashboard() {
           </Box>
         )}
       </Container>
-
-      {/* NEW: Sticker Browser Dialog */}
-      <Dialog 
-        open={stickerDialogOpen} 
-        onClose={() => setStickerDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{ bgcolor: "#667eea", color: "white", fontWeight: 700 }}>
-          🎨 Browse Stickers
-          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)", mt: 0.5 }}>
-            Select a sticker to create a custom design
-          </Typography>
-        </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          {/* Sticker Category Tabs */}
-          <Tabs
-            value={selectedStickerCategory}
-            onChange={(e, v) => setSelectedStickerCategory(v)}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}
-          >
-            {STICKER_CATEGORIES.map((cat) => (
-              <Tab 
-                key={cat.name}
-                label={cat.name}
-                value={cat.name}
-                icon={cat.icon}
-                iconPosition="start"
-                sx={{ textTransform: "none", fontWeight: 600 }}
-              />
-            ))}
-          </Tabs>
-
-          {/* Stickers Grid */}
-          <Grid container spacing={2}>
-            {filteredStickers.map((sticker) => (
-              <Grid item xs={3} sm={2} md={1.5} key={sticker.id}>
-                <Card
-                  onClick={() => handleStickerSelect(sticker)}
-                  sx={{
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    "&:hover": {
-                      transform: "scale(1.1)",
-                      boxShadow: 3
-                    }
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      p: 2,
-                      fontSize: "2.5rem"
-                    }}
-                  >
-                    {sticker.emoji}
-                  </Box>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setStickerDialogOpen(false)} variant="outlined">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }
