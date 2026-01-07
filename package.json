@@ -8,7 +8,11 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install"
   },
-  "keywords": ["design", "graphic", "mern"],
+  "keywords": [
+    "design",
+    "graphic",
+    "mern"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -19,6 +23,7 @@
     "react-konva": "^19.2.0"
   },
   "devDependencies": {
+    "baseline-browser-mapping": "^2.9.11",
     "concurrently": "^8.2.2"
   }
 }

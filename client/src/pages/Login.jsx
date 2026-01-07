@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,13 +12,18 @@ import {
   IconButton,
   InputAdornment,
   Switch,
-  Fade
+  Fade,
+  Alert,
+  CircularProgress
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  // Get auth state from Redux
+  const { loading, error } = useSelector((state) => state.auth);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,19 +33,37 @@ export default function Login() {
 
   const validate = () => {
     const errs = {};
-    if (!/^\S+@\S+\.\S+$/.test(email))
+    if (!email) {
+      errs.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
       errs.email = "Invalid email address";
-    if (password.length < 8)
-      errs.password = "Password must be at least 8 characters";
+    }
+    
+    if (!password) {
+      errs.password = "Password is required";
+    } else if (password.length < 6) {
+      errs.password = "Password must be at least 6 characters";
+    }
+    
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!validate()) return;
-    await dispatch(login({ email, password }));
-    navigate("/dashboard");
+    
+    try {
+      const result = await dispatch(login({ email, password })).unwrap();
+      // Only navigate if login was successful
+      if (result) {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      // Error will be shown via Redux state
+    }
   };
 
   return (
@@ -73,8 +96,7 @@ export default function Login() {
                   mx: "auto",
                   mb: 1,
                   borderRadius: 2,
-                  background:
-                    "linear-gradient(135deg,#8b5cf6,#ec4899)",
+                  background: "linear-gradient(135deg,#8b5cf6,#ec4899)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -92,15 +114,28 @@ export default function Login() {
               </Typography>
             </Box>
 
+            {/* ERROR ALERT */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
             {/* FORM */}
             <Box component="form" onSubmit={handleSubmit}>
               <TextField
                 fullWidth
                 label="Email"
                 margin="normal"
+                type="email"
+                value={email}
                 error={!!errors.email}
                 helperText={errors.email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors({ ...errors, email: "" });
+                }}
+                disabled={loading}
               />
 
               <TextField
@@ -108,22 +143,22 @@ export default function Login() {
                 label="Password"
                 type={showPassword ? "text" : "password"}
                 margin="normal"
+                value={password}
                 error={!!errors.password}
                 helperText={errors.password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) setErrors({ ...errors, password: "" });
+                }}
+                disabled={loading}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() =>
-                          setShowPassword(!showPassword)
-                        }
+                        onClick={() => setShowPassword(!showPassword)}
+                        disabled={loading}
                       >
-                        {showPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   )
@@ -133,24 +168,33 @@ export default function Login() {
               <Button
                 fullWidth
                 type="submit"
+                disabled={loading}
                 sx={{
                   mt: 3,
                   py: 1.3,
                   borderRadius: 3,
                   color: "#fff",
-                  background:
-                    "linear-gradient(90deg,#8b5cf6,#ec4899)",
-                  fontWeight: 600
+                  background: "linear-gradient(90deg,#8b5cf6,#ec4899)",
+                  fontWeight: 600,
+                  position: "relative"
                 }}
               >
-                Sign In →
+                {loading ? (
+                  <CircularProgress size={24} sx={{ color: "#fff" }} />
+                ) : (
+                  "Sign In →"
+                )}
               </Button>
 
               <Typography align="center" mt={2}>
                 Don&apos;t have an account?{" "}
                 <Box
                   component="span"
-                  sx={{ color: "#8b5cf6", cursor: "pointer" }}
+                  sx={{ 
+                    color: "#8b5cf6", 
+                    cursor: "pointer",
+                    "&:hover": { textDecoration: "underline" }
+                  }}
                   onClick={() => navigate("/register")}
                 >
                   Sign up
